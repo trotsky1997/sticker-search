@@ -1,17 +1,20 @@
 ---
 name: sticker-search
-description: Search, download, and send sticker/emoji images (表情包) from fabiaoqing.com. Use when the user wants to find/send stickers for emotional expression in chats, when responding to group chat messages with stickers, or when searching for reaction images by keyword (e.g. 加油, 谢谢, 庆祝, 开心, 无语).
+description: Search, download, and send sticker/emoji images (表情包) from multiple sources. Use when the user wants to find/send stickers for emotional expression in chats, when responding to group chat messages with stickers, or when searching for reaction images by keyword (e.g. 加油, 谢谢, 庆祝, 开心, 无语).
 ---
 
 # Sticker Search
 
-Search and download 表情包 (sticker images) from fabiaoqing.com for use in chat conversations.
+Search and download 表情包 from two complementary sources:
+
+- **ChineseBQB** (📦): Open-source GitHub repo, 5800+ curated stickers with Chinese filenames. No Referer needed.
+- **fabiaoqing.com** (🌐): Online search, trending/hot stickers. Requires Referer header.
 
 ## Usage
 
 ```bash
-# Search stickers by keyword (lists results)
-python3 scripts/sticker.py search <keyword> [page]
+# Search both sources (lists results with index numbers)
+python3 scripts/sticker.py search <keyword>
 
 # Download a specific sticker by index
 python3 scripts/sticker.py download <keyword> [index]
@@ -21,30 +24,34 @@ python3 scripts/sticker.py random <keyword>
 
 # Search + download + output JSON (for programmatic use)
 python3 scripts/sticker.py send <keyword> [chat_id]
+
+# Update ChineseBQB local index (run once, cached afterwards)
+python3 scripts/sticker.py update
 ```
 
 ## Workflow
 
-1. Pick a keyword matching the emotional context (see keyword guide below)
-2. Run `random <keyword>` to get a sticker path
-3. Send the image via the `message` tool with `media=<path>`
+1. Run `update` once to cache the ChineseBQB index (5800+ items)
+2. Pick a keyword matching the emotional context
+3. Run `random <keyword>` to get a sticker path
+4. Send the image via the `message` tool with `media=<path>`
 
 ## Keyword Guide
 
-| Context | Example keywords |
-|---------|-----------------|
+| Context | Keywords |
+|---------|----------|
 | Celebrating | 庆祝, 撒花, 牛逼 |
 | Encouraging | 加油, 冲, 你可以的 |
-| Thanking | 谢谢, 感谢, 比心 |
-| Happy | 开心, 哈哈, 高兴 |
-| Sad/sympathy | 哭, 难过, 抱抱 |
-| Speechless | 无语, 汗, 尴尬 |
+| Thanking | 谢谢, 感谢, 比心, 心心 |
+| Happy | 开心, 哈哈, 高兴, 开心鸭 |
+| Sad/sympathy | 哭, 难过, 抱抱, 可怜 |
+| Speechless | 无语, 汗, 尴尬, 懵逼 |
 | Angry | 生气, 怒, 气死 |
 | Greeting | 你好, 嗨, 早安 |
 
 ## Notes
 
-- Images require `Referer: https://fabiaoqing.com/` header for download (handled by the script)
-- Saved to `/tmp/openclaw/stickers/`
-- Supports jpg, png, gif, webp formats
-- Use `random` for quick one-off sends; use `search` + `download` when picking a specific one
+- ChineseBQB images are on GitHub raw URLs (stable, no auth needed)
+- fabiaoqing images require `Referer: https://fabiaoqing.com/` (handled by script)
+- Images saved to `/tmp/openclaw/stickers/`
+- Index cached at `/tmp/openclaw/sticker_cache/chinesebqb_index.json`
