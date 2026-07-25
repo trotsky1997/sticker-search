@@ -5,12 +5,33 @@ description: Search, download, verify, and send sticker/emoji images (表情包)
 
 # Sticker Search
 
-Search and download 表情包 from two complementary sources:
+Three complementary sticker sources:
 
-- **ChineseBQB** (📦): Open-source GitHub repo, 5800+ curated stickers with Chinese filenames. No Referer needed.
+- **Mamoji** (🎨): Local render engine, programmatically generate stickers by emotion. No download needed, ~40ms render. No image verification needed (parameters = content).
+- **ChineseBQB** (📦): Open-source GitHub repo, 5800+ curated stickers with Chinese filenames.
 - **fabiaoqing.com** (🌐): Online search, trending/hot stickers. Requires Referer header.
 
-## Usage
+## Usage — Mamoji (generate)
+
+```bash
+# Generate sticker by emotion keyword
+python3 scripts/mamoji.py generate <emotion> [text]
+
+# Custom parameters
+python3 scripts/mamoji.py custom <body> <face> <text> [fgcolor] [bgcolor]
+
+# List all presets
+python3 scripts/mamoji.py list
+
+# Generate + output JSON
+python3 scripts/mamoji.py send <emotion> [text] [chat_id]
+```
+
+Mamoji emotions: happy, celebrating, encouraging, sad, angry, shock, curious, proud, relief, ugh, calm, focus, done, thanks, love, fear
+
+Requires: mamoji dev server running at localhost:4321
+
+## Usage — Sticker Search (download)
 
 ```bash
 # Search both sources (lists results with index numbers)
@@ -29,7 +50,24 @@ python3 scripts/sticker.py send <keyword> [chat_id]
 python3 scripts/sticker.py update
 ```
 
-## Sticker Workflow
+## Source Selection Guide
+
+| Need | Best Source | Why |
+|------|------------|-----|
+| Precise emotion match | Mamoji | Parameters = content, no guesswork |
+| Quick reaction sticker | Mamoji | ~40ms, no network download |
+| Real memes / trending | fabiaoqing | Hot/trending content |
+| Curated variety | ChineseBQB | 5800+ organized by category |
+| Custom text on sticker | Mamoji | Only source that supports custom text |
+
+## Mamoji Workflow (preferred for emotion matching)
+
+1. Identify emotion from message context
+2. `python3 scripts/mamoji.py generate <emotion> [text]`
+3. Send via `message` tool with `media=<path>`
+4. No image verification needed — parameters define the content
+
+## Sticker Search Workflow (for variety/memes)
 
 1. Search keyword → download
 2. **Read the image** with `read` tool to verify content is appropriate and on-topic
