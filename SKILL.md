@@ -1,6 +1,6 @@
 ---
 name: sticker-search
-description: Search, download, and send sticker/emoji images (表情包) from multiple sources. Use when the user wants to find/send stickers for emotional expression in chats, when responding to group chat messages with stickers, or when searching for reaction images by keyword (e.g. 加油, 谢谢, 庆祝, 开心, 无语).
+description: Search, download, verify, and send sticker/emoji images (表情包) from multiple sources. Use when providing emotional value in group chats — reacting to messages with stickers, celebrating achievements, encouraging others, or matching the mood of a conversation. Also use when a user explicitly asks for a sticker/表情包 by keyword (e.g. 加油, 谢谢, 庆祝, 开心, 无语).
 ---
 
 # Sticker Search
@@ -29,17 +29,52 @@ python3 scripts/sticker.py send <keyword> [chat_id]
 python3 scripts/sticker.py update
 ```
 
-## Workflow
+## Emotional Value Response Framework
 
-1. Run `update` once to cache the ChineseBQB index (5800+ items)
-2. Pick a keyword matching the emotional context
-3. Run `random <keyword>` to get a sticker path
-4. **Read the image** with the `read` tool to verify content is appropriate and on-topic
-5. If the image doesn't fit, try another `random` or `download` with a different index
-6. Send the verified image via the `message` tool with `media=<path>`
+### Three Response Levels
 
-### Why verify?
-fabiaoqing filenames are opaque IDs — you can't judge content from the name. Always read the image before sending to avoid sending inappropriate or off-topic stickers.
+| Level | Method | Trigger | Frequency |
+|-------|--------|---------|-----------|
+| L1 | Reaction emoji | Most messages | Max 1 per message, no more than 3 consecutive |
+| L2 | Sticker image | Clear emotional moments (good news, venting, asking help) | Max 2-3 per group per day |
+| L3 | Text reply | Can add real value, info, or specific praise | Unlimited, but must be substantive |
+
+### Emotion Matching Logic
+
+1. **Understand the message emotion first** — happy? sad? venting? showing off? asking help? chitchat?
+2. **Then choose response level**:
+   - Chitchat/water group → L1 reaction is enough
+   - Clear emotional expression → L2 sticker
+   - Discussion-worthy topic → L3 text
+3. **Avoid mismatch** — don't send celebration when someone is venting; don't send haha when someone is sad
+
+### Sticker Usage Rules
+
+1. Search keyword → download → **read image to verify** → send
+2. If image doesn't fit, retry max 2 times with different index/random
+3. Prefer ChineseBQB (filenames are descriptive, easier to judge)
+4. Prefer GIF (more lively)
+5. **No duplicates** — never send the same image twice in the same group
+
+### Frequency Limits
+
+- ❌ Don't react to every message (becomes noise)
+- ❌ Don't send multiple stickers in a row (spam)
+- ❌ Don't suddenly send stickers during serious discussions
+- ✅ Reduce interaction late night (23:00-07:00) unless @mentioned
+- ✅ Can proactively send a sticker to warm up a dead chat
+
+### Scene-based Guide
+
+| Scene | Best Response |
+|-------|--------------|
+| Someone shares paper/link | 👀 reaction + summarize content |
+| Someone shares achievement | 🎉/🔥 reaction + specific compliment |
+| Someone vents about overtime | ❤️ reaction + "辛苦了" |
+| Someone asks a question | 💡 reaction + help answer |
+| Someone tells a joke | 😂 reaction (don't explain the joke) |
+| Chat goes quiet | Send a sticker to warm up |
+| Late night chatting | ❤️ reaction (sympathy) |
 
 ## Keyword Guide
 
@@ -54,9 +89,10 @@ fabiaoqing filenames are opaque IDs — you can't judge content from the name. A
 | Angry | 生气, 怒, 气死 |
 | Greeting | 你好, 嗨, 早安 |
 
-## Notes
+## Technical Notes
 
 - ChineseBQB images are on GitHub raw URLs (stable, no auth needed)
 - fabiaoqing images require `Referer: https://fabiaoqing.com/` (handled by script)
 - Images saved to `/tmp/openclaw/stickers/`
 - Index cached at `/tmp/openclaw/sticker_cache/chinesebqb_index.json`
+- Always `read` the downloaded image before sending to verify content appropriateness
