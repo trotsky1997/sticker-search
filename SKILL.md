@@ -34,7 +34,12 @@ python3 scripts/sticker.py update
 1. Run `update` once to cache the ChineseBQB index (5800+ items)
 2. Pick a keyword matching the emotional context
 3. Run `random <keyword>` to get a sticker path
-4. Send the image via the `message` tool with `media=<path>`
+4. **Read the image** with the `read` tool to verify content is appropriate and on-topic
+5. If the image doesn't fit, try another `random` or `download` with a different index
+6. Send the verified image via the `message` tool with `media=<path>`
+
+### Why verify?
+fabiaoqing filenames are opaque IDs — you can't judge content from the name. Always read the image before sending to avoid sending inappropriate or off-topic stickers.
 
 ## Keyword Guide
 
