@@ -25,6 +25,30 @@ from pathlib import Path
 
 # === Config ===
 MAMOJI_URL = "http://localhost:4321/api/render"
+# SVG format contains the macaron body correctly.
+# GIF/WebP go through Lottie pipeline which drops embedded image assets.
+# For PNG output, use puppeteer+chromium to render SVG (supports embedded WebP).
+MAMOJI_FORMAT = "svg"
+MAMOJI_RENDER_SCRIPT = """
+import chromium from '@sparticuz/chromium';
+import { launch } from 'puppeteer-core';
+
+const execPath = await chromium.executablePath();
+const browser = await launch({
+  executablePath: execPath,
+  headless: true,
+  args: [...chromium.args, '--no-sandbox', '--disable-dev-shm-usage'],
+});
+const page = await browser.newPage();
+await page.setViewport({ width: 512, height: 512, deviceScaleFactor: 1 });
+const svg = await Bun.file(SVG_PATH).text();
+await page.setContent('<html><head><style>*{margin:0;padding:0}body{width:512px;height:512px;overflow:hidden}</style></head><body>' + svg + '</body></html>', { waitUntil: 'networkidle0' });
+await new Promise(r => setTimeout(r, 500));
+const buffer = await page.screenshot({ type: 'png', omitBackground: false });
+await Bun.write(PNG_PATH, buffer);
+await browser.close();
+console.log('OK', buffer.length, 'bytes');
+"""
 SAVE_DIR = Path("/tmp/openclaw/mamoji")
 SHARP_PATH = None  # auto-detect
 
@@ -243,11 +267,34 @@ sharp('{svg_path}').png().toFile('{png_path}')
     return result.returncode == 0 and "ok" in result.stdout
 
 
+def svg_to_png_via_chromium(svg_path: str, png_path: str) -> bool:
+    """Render SVG to PNG using puppeteer+chromium (supports embedded WebP images)"""
+    import subprocess, os
+    mamoji_dir = "/tmp/mamoji"
+    if not os.path.exists(mamoji_dir):
+        print("⚠️  mamoji repo not found at /tmp/mamoji")
+        return False
+    
+    script = MAMOJI_RENDER_SCRIPT.replace("SVG_PATH", repr(svg_path)).replace("PNG_PATH", repr(png_path))
+    result = subprocess.run(
+        ["bun", "-e", script],
+        capture_output=True, text=True, timeout=30,
+        cwd=mamoji_dir,
+        env={**os.environ, "PATH": os.environ.get("HOME", "/root") + "/.bun/bin:" + os.environ.get("PATH", "")}
+    )
+    if result.returncode == 0 and "OK" in result.stdout:
+        return True
+    print(f"⚠️  chromium render failed: {result.stderr[:200]}")
+    return False
+
+
 def render_mamoji(core: dict) -> Path:
     """Call mamoji render API, return path to saved file"""
     SAVE_DIR.mkdir(parents=True, exist_ok=True)
     
-    # Build request
+    text_slug = core.get("text", "mamoji").replace("/", "_")[:20]
+    
+    # Always get SVG from the API (contains macaron body correctly)
     data = json.dumps(core).encode("utf-8")
     req = urllib.request.Request(
         MAMOJI_URL,
@@ -255,18 +302,15 @@ def render_mamoji(core: dict) -> Path:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    
     with urllib.request.urlopen(req, timeout=15) as resp:
         svg_data = resp.read()
     
-    # Save SVG
-    text_slug = core.get("text", "mamoji").replace("/", "_")[:20]
     svg_path = SAVE_DIR / f"{text_slug}.svg"
     svg_path.write_bytes(svg_data)
     
-    # Try converting to PNG
+    # Convert to PNG via chromium (supports embedded WebP body image)
     png_path = SAVE_DIR / f"{text_slug}.png"
-    if svg_to_png(str(svg_path), str(png_path)):
+    if svg_to_png_via_chromium(str(svg_path), str(png_path)):
         return png_path
     return svg_path
 
