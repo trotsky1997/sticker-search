@@ -59,6 +59,52 @@ python3 scripts/sticker.py update
 | Real memes / trending | fabiaoqing | Hot/trending content |
 | Curated variety | ChineseBQB | 5800+ organized by category |
 | Custom text on sticker | Mamoji | Only source that supports custom text |
+| IP character / brand stickers | fabiaoqing | Brand-aware search with title extraction |
+
+## Brand / Character Matching
+
+When searching for specific IP characters (水豚噜噜, 兔斯基, 小刘鸭, etc.), the script:
+
+1. **Resolves brand aliases** — e.g. 水豚噜噜 → 水豚, 卡皮巴拉 → 水豚
+2. **Extracts titles** from fabiaoqing results (title/alt attributes)
+3. **Brand-aware ranking** — stickers whose title contains the brand name are sorted first
+4. **Shows match count** in search output
+
+Supported brand aliases (extensible in `BRAND_ALIASES` dict in `sticker.py`):
+
+| Search term | Matches | ChineseBQB Category |
+|-------------|---------|---------------------|
+| 水豚噜噜 / 水豚 / 卡皮巴拉 / capybara | 水豚 | (fabiaoqing only) |
+| 兔斯基 / tuzki | 兔斯基 | (fabiaoqing only) |
+| 滑稽 / 小黄脸 | 滑稽, Funny, Emoji | 001Funny_滑稽大佬😏BQB |
+| 猫 / 猫咪 | 猫, 喵, Cat | 010Cat_是喵星人啦🐱BQB |
+| 狗 | 狗, Dog | 011Dog_狗🐶BQB |
+| 柴犬 / doge | 柴犬, doge | (fabiaoqing only) |
+| 仓鼠 | 仓鼠, Hamster | 006Hamster_仓鼠🐹BQB |
+| 鹦鹉 | 鹦鹉, Parrot | 012Parrot_鹦鹉🐦BQB |
+| 猪 | 猪, Pig | 014Pig_猪🐖BQB |
+| 小猪佩奇 | 小猪佩奇, PigPecs | 013PigPecs_小猪佩奇👑BQB |
+| 青蛙 | 青蛙, Frog | 065TravelFrog_旅行青蛙🐸BQB |
+| 企鹅 | 企鹅, Penguin | 031Penguin_沙雕企鹅🐧BQB |
+| 熊猫 / 熊猫头 / 金馆长 | 熊猫, Panda, 金馆长 | 015Golden_Curator_Panda金馆长熊猫🐼BQB |
+| 海绵宝宝 | 海绵宝宝, SpongeBob | 048SpongeBob_海绵宝宝BQB |
+| 皮卡丘 | 皮卡丘, Pikachu | 036Pikachu_皮卡丘BQB |
+| 哆啦A梦 | 哆啦A梦, Doraemon | 056Doraemon_哆啦A梦BQB |
+| 奥特曼 | 奥特曼, Altman | 043Altman_奥特曼BQB |
+| 柯南 | 柯南, KeNan | 061KeNan_柯南BQB |
+| 熊本熊 | 熊本熊, KumamotoBear | 009KumamotoBear_熊本熊🐻BQB |
+| 假笑男孩 | 假笑男孩, SmirkBoy | 004SmirkBoy_假笑男孩👦BQB |
+| 苏大强 | 苏大强, SuDaqiang | 022SuDaqiang_苏大强👴BQB |
+| 猫和老鼠 | 猫和老鼠, TomAndJerry | 035TomAndJerry_猫和老鼠BQB |
+| 原神 | 原神, GenShin | 095GenShin_原神_BQB |
+| 电锯人 | 电锯人, ChainsawMan | 101ChainsawMan_电锯人_BQB |
+| 黑神话悟空 | 黑神话悟空, BlackMythWuKong | 105_BlackMythWuKong_黑神话悟空🐒_BQB |
+| 蔡徐坤 | 蔡徐坤, CaiXvKun | 062CaiXvKun_蔡徐坤🏀BQB |
+| 罗翔 | 罗翔, LuoXiang | 092LuoXiang_罗翔_BQB |
+| 黄仁勋 | 黄仁勋, JensenHuang | 104JensenHuang_黄仁勋🧩_BQB |
+| ...and more | Edit BRAND_ALIASES to add |
+
+To add more brands, edit `BRAND_ALIASES` in `scripts/sticker.py`.
 
 ## Mamoji Workflow (preferred for emotion matching)
 
